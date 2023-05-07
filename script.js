@@ -7,38 +7,53 @@ const websites=[
 ];
 
 const link = document.getElementById('website-link');
+const searchBar = document.querySelector('.search-bar');
 
 function updateLink(){
     link.href = websites[currentIndex].url;
     link.textContent = websites[currentIndex].name;
 }
+
 let currentIndex = 0;
 
 updateLink();
 
 document.addEventListener('keydown', function(event){
-    //left
-    if (event.keyCode === 37){
-        currentIndex--;
-        if (currentIndex<0){
-            currentIndex = websites.length - 1;
-        }
-    } 
-    //right
-    else if (event.keyCode === 39) {
-        currentIndex++;
-        if (currentIndex>= websites.length){
-            currentIndex=0;
+    
+    if(event.key === 'ArrowRight'){
+        if(document.activeElement === searchBar){
+            const selectionStart = searchBar.selectionStart;
+            searchBar.setSelectionRange(selectionStart +1, selectionStart +1);
+        } else {
+            currentIndex++;
+            if(currentIndex>=websites.length){
+                currentIndex = 0;
+            }
         }
     }
-    //enter
-    else if (event.keyCode === 13){
-        link.click();
-        return;
+    else if(event.key === 'ArrowLeft'){
+        if(document.activeElement === searchBar){
+            const selectionStart = searchBar.selectionStart;
+            searchBar.setSelectionRange(selectionStart -1, selectionStart -1);
+        } else {
+            currentIndex--;
+            if(currentIndex<0){
+                currentIndex = websites.length -1;
+            }
+        }
     }
-    else {
-        return;
+    else if(event.key === 'Enter'){
+        if(document.activeElement === searchBar){
+            weather.search();
+        } else { link.click(); return;}
     }
+
+    else if(event.key === 'Escape'){
+        if(document.activeElement === searchBar){
+            searchBar.blur();
+        }
+    }
+    else{ return; }
 
     event.preventDefault();
     updateLink();
@@ -47,7 +62,7 @@ document.addEventListener('keydown', function(event){
 
 
 const weather = {
-    apiKey: "api_key",
+    apiKey: "7ae7e0961142ca49bd9e7a7ac9145257",
     fetchWeather: function(city){
         fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${this.apiKey}`)
         .then((response) => {
@@ -76,18 +91,18 @@ const weather = {
         document.querySelector('.temp').innerText = `${temp}°C`;
         document.querySelector('.humidity').innerText = `Humidity: ${humidity}%`;
         document.querySelector('.wind').innerText = `Wind Speed: ${speed} km/hr`;
-        document.querySelector(".weather-container").classList.remove("loading");
-        document.body.style.backgroundImage=
-         `url('https://source.unsplash.com/1600x900/?${description}')`;
-
+        
+        document.getElementById('wallpaper').style.backgroundImage=
+         `url('https://source.unsplash.com/1600x900/?${description.toLowerCase()}')`;
     },
     search: function(){
-        const city = document.querySelector(".search-bar").value;
-        if (!city){
-            alert("Please enter a city name")
+        const searchBar = document.querySelector(".search-bar");
+        if (!searchBar.value){
+            alert("Please enter a city name");
             return;
         }
-        this.fetchWeather(city);
+        
+        this.fetchWeather(searchBar.value);
     }
 };
 
@@ -96,12 +111,6 @@ function init(){
     document.querySelector('.search-input-container button').addEventListener('click', () => {
         weather.search();
     });
-
-    // document.querySelector('.search-bar').addEventListener('keyup', function(event){
-    //     if (event.keyCode === 13){
-    //         weather.search();
-    //     }
-    // })
 }
 init();
 
